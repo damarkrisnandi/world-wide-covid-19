@@ -68,14 +68,14 @@ export default {
     },
     async mounted() {
         this.loading = true;
-        this.dataList = (await axios.get('https://corona.lmao.ninja/countries?sort=ascending')).data;
+        await this.getAll();
         this.loading = false;
     },
     methods: {
         async searchCountry() {
             this.loading = true;
             const data = (await axios.get('https://corona.lmao.ninja/countries/' + this.country)).data;
-            if (this.country != '' && data) {
+            if (this.country.length > 0 && data) {
                 this.dataList = [];
                 this.dataList.push(data);
             } else {
@@ -83,7 +83,9 @@ export default {
             }
             this.loading = false;
         },
-
+        async getAll () {
+            this.dataList = (await axios.get('https://corona.lmao.ninja/countries/')).data;
+        },
         getColor (num) {
             if (num > 5000) return 'red'
             else if (num > 1000) return 'orange'
