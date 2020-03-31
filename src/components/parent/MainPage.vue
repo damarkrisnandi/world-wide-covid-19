@@ -59,7 +59,27 @@
                 <line-chart :chart-data="dataCollection"
                 :options="{responsive: true, maintainAspectRatio: false}"
                 ></line-chart>
+                <!-- <label align="right">Recovery percentage</label>
+                <h1> {{ percentage }}%</h1> -->
             </v-container>
+            <v-card
+                class="mx-auto"
+                color="#26c6da"
+                dark
+                max-width="600"
+                align="right"
+            >
+                <v-card-title>
+                Recovery percentage
+                </v-card-title>
+
+                <v-card-text class="headline font-weight-bold" align="right">
+                    <h1> {{ percentage }}%</h1>    
+                </v-card-text>
+
+                <v-card-actions>
+                </v-card-actions>
+            </v-card>
 
             <v-divider></v-divider>
 
@@ -110,7 +130,8 @@ export default {
         dataDeath: [],
         dataConfirmed: [],
         labelData: [],
-        dataCollection: { labels:[], datasets: [] }
+        dataCollection: { labels:[], datasets: [] },
+        percentage: 0
     }),
     extends: Line,
     components: {
@@ -181,6 +202,9 @@ export default {
                     },
                 ],
             };
+            const todayRecover = this.dataRecovered[this.dataRecovered.length - 1];
+            const todayInfected = this.dataConfirmed[this.dataConfirmed.length - 1];
+            this.percentage = ((todayRecover / todayInfected) * 100).toFixed(2);
         });
         },
         clearChart() {
@@ -192,6 +216,7 @@ export default {
             this.dataCollection = { labels:[], datasets: [] };
         },
         closeDialog() {
+            this.percentage = 0;
             this.dialog = false;
             this.clearChart();
         }
