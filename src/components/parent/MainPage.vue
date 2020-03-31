@@ -37,13 +37,52 @@
                     <v-chip v-if="getColorDeath(item.todayDeaths)=='red'" :color="getColorDeath(item.todayDeaths)" dark>{{ item.todayDeaths }}</v-chip>
                     <v-chip v-if="getColorDeath(item.todayDeaths)=='white'" :color="getColorDeath(item.todayDeaths)" >{{ item.todayDeaths }}</v-chip>
                 </template>
+                <template v-slot:item.dailyData="{ item }">
+                    <v-btn small color="primary" @click="getData(item)">View Data</v-btn>
+                </template>
             </v-data-table>
+            <v-dialog
+        v-model="dialog"
+        fullscreen hide-overlay transition="dialog-bottom-transition"
+        >
+
+        <v-card>
+            <v-card-title
+            class="headline grey lighten-2"
+            primary-title
+            >
+            {{ selectedCountry }}
+            </v-card-title>
+
+            <!-- <InfoPerDay :country="selectedCountry"/> -->
+            <v-container>
+                <line-chart :chart-data="dataCollection"
+                :options="{responsive: true, maintainAspectRatio: false}"
+                ></line-chart>
+            </v-container>
+
+            <v-divider></v-divider>
+
+            <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+                color="primary"
+                text
+                @click="closeDialog"
+            >
+                Close
+            </v-btn>
+            </v-card-actions>
+        </v-card>
+        </v-dialog>
         </v-container>
     </v-lazy>
 </template>
 
 <script>
 import axios from 'axios';
+import { Line } from 'vue-chartjs'
+import LineChart from '../child/LineChart'
 export default {
     name: 'MainPage',
     data: () => ({
@@ -61,10 +100,21 @@ export default {
           { text: 'Recovered', value: 'recovered' },
           { text: 'Today Cases', value: 'todayCases' },
           { text: 'Today Death', value: 'todayDeaths' },
-        ]
+          { text: 'View Data', value: 'dailyData' },
+        ],
+        dialog: false,
+        selectedCountry: '',
+
+        idnData: [],
+        dataRecovered: [],
+        dataDeath: [],
+        dataConfirmed: [],
+        labelData: [],
+        dataCollection: { labels:[], datasets: [] }
     }),
+    extends: Line,
     components: {
-        
+        LineChart
     },
     async mounted() {
         this.loading = true;
@@ -96,6 +146,55 @@ export default {
             if (num > 0) return 'red'
             return 'white'
         },
+        getData (item) {
+            this.selectedCountry = item.country
+            this.dialog = true;
+            this.generateChart();
+        },
+        generateChart() {
+            (axios.get('https://pomber.github.io/covid19/timeseries.json')).then((res) => {
+            this.idnData = res.data[this.selectedCountry];
+            console.log('cek data', this.selectedCountry, this.idnData[0].recovered);
+            this.idnData.forEach(item => {
+                this.dataRecovered.push(item.recovered);
+                this.dataDeath.push(item.deaths);
+                this.dataConfirmed.push(item.confirmed);
+                }
+            );
+            this.idnData.forEach(item => {
+                this.labelData.push(item.date);
+                }
+            );
+            console.log('cek ulang', this.dataRecovered);
+            this.dataCollection = {
+                labels: this.labelData,
+                datasets: [
+                    {
+                        label: 'Recovered',
+                        backgroundColor: '#32CD32',
+                        data: this.dataRecovered
+                    },
+                    {
+                        label: 'Infected',
+                        backgroundColor: '#800000',
+                        data: this.dataConfirmed
+                    },
+                ],
+            };
+        });
+        },
+        clearChart() {
+            this.idnData = [];
+            this.dataRecovered = [];
+            this.dataDeath = [];
+            this.dataConfirmed = [];
+            this.labelData = [];
+            this.dataCollection = { labels:[], datasets: [] };
+        },
+        closeDialog() {
+            this.dialog = false;
+            this.clearChart();
+        }
     }
 }
 </script>

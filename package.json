@@ -9,9 +9,12 @@
   },
   "dependencies": {
     "axios": "^0.19.2",
+    "chart.js": "^2.9.3",
     "core-js": "^3.6.4",
     "vue": "^2.6.11",
-    "vuetify": "^2.2.11"
+    "vue-chartjs": "^3.5.0",
+    "vuetify": "^2.2.11",
+    "vuetrend": "^0.3.4"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.2.0",
